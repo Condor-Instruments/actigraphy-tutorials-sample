@@ -2,6 +2,8 @@
   link: /actigraphy-tutorials-sample/
 - name: Loading Data
   link: /actigraphy-tutorials-sample/loading_data.html
+- name: NPCRA
+  link: /actigraphy-tutorials-sample/npcra.html
 - name: Actogram
   link: /actigraphy-tutorials-sample/actogram.html
 - name: Cosinor
