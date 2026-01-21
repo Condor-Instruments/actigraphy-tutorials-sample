@@ -3,6 +3,7 @@
 Author: Julius A. P. P. de Paula (--/2023)
 """
 
+
 import os, inspect, sys
 os.environ['NUMPY_EXPERIMENTAL_ARRAY_FUNCTION'] = '0'
 import cProfile, pstats, io
@@ -12,7 +13,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime, timedelta
 from scipy.signal import find_peaks as peak
-
 
 from cspd_functions import *
 from functions import *
@@ -267,16 +267,16 @@ class CSPD_BedTime_Refiner:
 
         # If there aren't enough epochs available to fill the filter window,
         # the maximum value is concatenated as needed.
-        if refinement_window_start-self.median_filter_half_window_size >= 0:
-            if refinement_window_end+self.median_filter_half_window_size+1 <= self.data_length:
-                refinement_window_activity = self.activity[refinement_window_start-self.median_filter_half_window_size:refinement_window_end+self.median_filter_half_window_size+1]
+        if refinement_window_start-2*self.median_filter_half_window_size >= 0:
+            if refinement_window_end+2*self.median_filter_half_window_size+1 <= self.data_length:
+                refinement_window_activity = self.activity[refinement_window_start-2*self.median_filter_half_window_size:refinement_window_end+2*self.median_filter_half_window_size+1]
             else:
                 refinement_window_activity = self.activity[refinement_window_start-self.median_filter_half_window_size:self.data_length]
-                while len(refinement_window_activity) < (refinement_window_end+1+2*self.median_filter_half_window_size-refinement_window_start):
+                while len(refinement_window_activity) < (refinement_window_end+1+4*self.median_filter_half_window_size-refinement_window_start):
                     refinement_window_activity = np.append(refinement_window_activity,np.max(self.activity[refinement_window_start:refinement_window_end+1]))
         else:
-            refinement_window_activity = self.activity[0:refinement_window_end+self.median_filter_half_window_size+1]
-            while len(refinement_window_activity) < (refinement_window_end+1+2*self.median_filter_half_window_size-refinement_window_start):
+            refinement_window_activity = self.activity[0:refinement_window_end+2*self.median_filter_half_window_size+1]
+            while len(refinement_window_activity) < (refinement_window_end+1+4*self.median_filter_half_window_size-refinement_window_start):
                 refinement_window_activity = np.insert(refinement_window_activity, 0, np.max(self.activity[refinement_window_start:refinement_window_end+1]))
 
         refinement_window_activity_median = median_filter(refinement_window_activity,self.median_filter_half_window_size,padding='padded')

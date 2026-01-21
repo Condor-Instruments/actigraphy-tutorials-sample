@@ -165,23 +165,33 @@ class CrespoAlgorithm:
                     zero_sequence_length = 0
 
             # mitigated_zeros_activity is then padded at the beggining and at the end  
-            # with a sequence of 30*median_filter_window_hourly_length elements of value 
+            # with a sequence of 60*median_filter_window_hourly_length elements of value 
             # maximum_activity=max(activity).
-            pad = maximum_activity*np.ones(int(0.5*epoch_hour*self.median_filter_window_hourly_length))
+
+            print("data_length",data_length)
+            print("mitigated_zeros_activity",len(mitigated_zeros_activity))
+
+            pad = maximum_activity*np.ones(int(epoch_hour*self.median_filter_window_hourly_length))
+            print("pad",len(pad))
+
             padded_mitigated_zeros_activity = np.insert(mitigated_zeros_activity,0,pad)
             padded_mitigated_zeros_activity = np.append(padded_mitigated_zeros_activity,pad)
+            print("padded_mitigated_zeros_activity",len(padded_mitigated_zeros_activity))
             padded_mitigated_zeros_activity = median_filter(padded_mitigated_zeros_activity,median_filter_half_window_size,padding='padded')
+            print("padded_mitigated_zeros_activity",len(padded_mitigated_zeros_activity))
 
             sleep_median_activity_threshold = np.quantile(padded_mitigated_zeros_activity,self.sleep_median_activity_quantile_threshold,interpolation='linear')
             
             # Thresholding operation.
             initial_sleep_detection = np.where(padded_mitigated_zeros_activity > sleep_median_activity_threshold, 1, 0)    
-            
+            print("initial_sleep_detection",len(initial_sleep_detection))
+
             # Morphological strutcturing element.
             structuring_element = np.ones(self.preprocessing_morphological_filter_structuring_element_size)   
 
             # Morphological operations.
             morphological_filtered_initial_detection = binary_opening(binary_closing(initial_sleep_detection,structuring_element),structuring_element).astype(int)
+            print("morphological_filtered_initial_detection",len(morphological_filtered_initial_detection))
 
             invalid_zero_indexes = np.asanyarray([],dtype=int) # This array will contain 
                                                                # the indexes of the 

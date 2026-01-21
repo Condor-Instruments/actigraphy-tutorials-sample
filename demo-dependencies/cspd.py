@@ -17,8 +17,6 @@ from cspd_functions import *
 from cspd_bt_refine import CSPD_BedTime_Refiner
 from cspd_gt_refine import CSPD_GetUpTime_Refiner
 from crespo_algorithm import CrespoAlgorithm
-
-
 from functions import *
 
 # pd.set_option('display.max_rows', None)
