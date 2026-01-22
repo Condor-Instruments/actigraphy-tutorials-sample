@@ -25,7 +25,7 @@ def to_datetime(date):
     """
     timestamp = ((date - np.datetime64('1970-01-01T00:00:00'))
                  / np.timedelta64(1, 's'))
-    return datetime.utcfromtimestamp(timestamp)
+    return datetime.fromtimestamp(timestamp)
 
     
 color_list = [
@@ -53,8 +53,8 @@ def actigraphy_split_by_day(df, start_hour = 0, dt=None):
 
     n = len(dt)
 
-    if not isinstance(dt[0],datetime):
-        if isinstance(dt[0],str):
+    if not isinstance(dt.iloc[0],datetime):
+        if isinstance(dt.iloc[0],str):
             dt = pd.to_datetime(dt,dayfirst=True)
         
     dt = np.array([to_datetime(stamp) for stamp in dt])
