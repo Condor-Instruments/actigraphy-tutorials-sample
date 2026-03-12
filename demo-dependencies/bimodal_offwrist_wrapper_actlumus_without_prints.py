@@ -9,10 +9,10 @@ import numpy as np
 
 from contextlib import redirect_stdout
 
-from bimodal_thresh import bimodal_thresh
-from bimodal_offwrist_feature import bimodal_offwrist_feature
-from bimodal_offwrist_refine import BimodalOffwristRefiner
-from bimodal_offwrist_refine_release import BimodalOffwristRefiner
+from bimodal_thresh_without_prints  import bimodal_thresh
+from bimodal_offwrist_feature_without_prints  import bimodal_offwrist_feature
+from bimodal_offwrist_refine_without_prints  import BimodalOffwristRefiner
+# from bimodal_offwrist_refine_release import BimodalOffwristRefiner
 
 from sklearn.model_selection import ParameterGrid
 from scipy.stats import mode

@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime, timedelta
 from scipy.signal import find_peaks as peak
-from cspd_functions import *
+
+from cspd_functions_without_prints  import *
 
 # folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # root = folder[0:(len(folder)-len("pycspd"))]

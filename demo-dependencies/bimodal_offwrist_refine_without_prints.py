@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 from datetime import timedelta
 import pandas as pd
 
-from describe_offwrist_periods import describe_offwrist_periods
-from bimodal_thresh_development import bimodal_thresh
+from describe_offwrist_periods_without_prints  import describe_offwrist_periods
+from bimodal_thresh_without_prints  import bimodal_thresh
 
 import sys
 import inspect

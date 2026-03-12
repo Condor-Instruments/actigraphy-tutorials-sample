@@ -6,7 +6,7 @@ import numpy as np
 
 # root = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # sys.path.insert(0, root + '/pycspd')
-from cspd import CSPD as cr
+from cspd_without_prints import CSPD as cr
 
 
 # param_set = [5.00000000e-01, 1.36818215e-01, 2.83303006e-01, 9.76738814e-01,

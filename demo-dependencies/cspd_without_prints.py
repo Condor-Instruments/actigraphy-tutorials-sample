@@ -13,10 +13,10 @@ from datetime import datetime, timedelta, date
 from scipy.ndimage import binary_closing, binary_opening
 from scipy.signal import find_peaks as peak
 
-from cspd_functions import *
-from cspd_bt_refine import CSPD_BedTime_Refiner
-from cspd_gt_refine import CSPD_GetUpTime_Refiner
-from crespo_algorithm import CrespoAlgorithm
+from cspd_functions_without_prints  import *
+from cspd_bt_refine_without_prints  import CSPD_BedTime_Refiner
+from cspd_gt_refine_without_prints  import CSPD_GetUpTime_Refiner
+from crespo_algorithm_without_prints  import CrespoAlgorithm
 
 # folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # root = folder[0:(len(folder)-len("pycspd"))]

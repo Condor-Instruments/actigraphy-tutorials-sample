@@ -6,7 +6,8 @@ import time, os, inspect, sys
 import pandas as pd
 from datetime import datetime, timedelta, date
 from scipy.ndimage import binary_closing, binary_opening
-from cspd_functions import *
+
+from cspd_functions_without_prints  import *
 
 # folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # root = folder[0:(len(folder)-len("pycspd"))]
