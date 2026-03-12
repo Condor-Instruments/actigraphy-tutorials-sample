@@ -7,12 +7,14 @@ import sys
 import inspect
 import os
 import cProfile, pstats, io
-import time as ttime
 
 import pandas as pd
 import numpy as np
 
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pyoffwrist"))]
 
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 def bimodal_offwrist_feature(df,half_window_length,activity_features,temperature_features,temperature_difference_features,capsensor1_features,capsensor2_features,verbose=0):
@@ -42,33 +44,18 @@ def bimodal_offwrist_feature(df,half_window_length,activity_features,temperature
                 Extracted features from all readings
         """
 
-        start_time_ = ttime.time()
-
-
         # Extracting features from PIM
         if activity_features == None:
                 data = pd.DataFrame([])
         else:
                 pim = df["PIM"].to_numpy()
-                start_time = ttime.time()    
                 data = extract_features(pim,half_window_length=half_window_length,column_prefix="activity_",features=activity_features)
-                if verbose:
-                        print("lg pim ",ttime.time()-start_time,"\n")
-        if verbose > 1:
-                print(data)
 
         # Extracting features from internal temperature
         if temperature_features != None:
                 int_temp = df["TEMPERATURE"].to_numpy()
-                start_time = ttime.time()
                 int_temp_data = extract_features(int_temp,half_window_length=half_window_length,column_prefix='temperature_',features=temperature_features)
                 data = pd.concat([data,int_temp_data],axis=1,ignore_index=False)
-                if verbose:
-                        print("lg temp ",ttime.time()-start_time,"\n")
-                if verbose > 1:
-                        print(lg.data)
-        if verbose > 1:
-                print(data)
 
         
         if temperature_difference_features != None:
@@ -77,16 +64,11 @@ def bimodal_offwrist_feature(df,half_window_length,activity_features,temperature
                         ext_temp = df["TEMPERATURE"].to_numpy()-0.6
 
                 dif_temp = np.absolute(np.subtract(int_temp,ext_temp))
-                start_time = ttime.time()
+                dif_temp = np.subtract(int_temp,ext_temp)
+                
                 dif_data = extract_features(dif_temp,half_window_length=half_window_length,column_prefix='diftemp_',features=temperature_difference_features)
                 dif_data["ext_temp"] = ext_temp
                 data = pd.concat([data,dif_data],axis=1,ignore_index=False)
-                if verbose:
-                        print("lg dif ",ttime.time()-start_time,"\n")
-                if verbose > 1:
-                        print(lg.data)
-        if verbose > 1:
-                print(data)
 
 
         # Extracting features from capacitive sensor 1
@@ -95,18 +77,8 @@ def bimodal_offwrist_feature(df,half_window_length,activity_features,temperature
                         cap1 = norm_01(df["CAP_SENS_1"].to_numpy())
                         cap1 = df["CAP_SENS_1"].to_numpy()
 
-                        start_time = ttime.time()
                         cap1_data = extract_features(cap1,half_window_length=half_window_length,column_prefix='capsensor1_',features=capsensor1_features)
                         data = pd.concat([data,cap1_data],axis=1,ignore_index=False)
-                        if verbose:
-                                print("lg c1 ",ttime.time()-start_time,"\n")
-                        if verbose > 1:
-                                print(lg.data)
-                else:
-                        if verbose:
-                                print("no cap1 column\n")
-        if verbose > 1:
-                print(data)
 
         # Extracting features from capacitive sensor 2
         if capsensor2_features != None:
@@ -114,20 +86,7 @@ def bimodal_offwrist_feature(df,half_window_length,activity_features,temperature
                         cap2 = norm_01(df["CAP_SENS_2"].to_numpy())
                         cap2 = df["CAP_SENS_2"].to_numpy()
 
-                        start_time = ttime.time()                        
                         cap2_data = extract_features(cap2,half_window_length=half_window_length,column_prefix='capsensor2_',features=capsensor2_features)
                         data = pd.concat([data,cap2_data],axis=1,ignore_index=False)
-                        if verbose:
-                                print("lg c2 ",ttime.time()-start_time,"\n")
-                        if verbose > 1:
-                                print(lg.data)
-                else:
-                        if verbose:
-                                print("no cap2 column\n")
-        if verbose > 1:
-                print(data)
-
-        if verbose:
-                print("total ",ttime.time()-start_time_,"\n")
 
         return data

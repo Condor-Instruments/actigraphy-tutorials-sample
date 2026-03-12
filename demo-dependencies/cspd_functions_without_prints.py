@@ -11,7 +11,10 @@ import pandas as pd
 from datetime import date,datetime,timedelta,time
 from scipy.signal import find_peaks as peak  
 
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pycspd"))]
 
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 def compute_features(activity,

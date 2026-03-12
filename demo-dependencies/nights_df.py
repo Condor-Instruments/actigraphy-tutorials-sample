@@ -51,24 +51,24 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
     else:
         time_gaps = []
 
-    if verbose:
-        print("time_gaps",time_gaps)
+    # if verbose:
+    #     print("time_gaps",time_gaps)
 
     boundaries = [[],[]]
 
     num_gaps = len(time_gaps)
     if num_gaps > 0:
         for i in range(num_gaps):
-            if verbose:
-                print("i",i)
+            # if verbose:
+            #     print("i",i)
 
             if i == 0:
                 edges = np.concatenate(([0],np.diff(states[0:time_gaps[i]])))
                 edges_index = edges.nonzero()[0]
                 transitions = [[k,edges[k]] for k in edges_index]
 
-                if verbose:
-                    print("transitions",transitions)
+                # if verbose:
+                #     print("transitions",transitions)
 
                 if len(transitions) > 0:
                     if transitions[0][1] < 0:
@@ -91,8 +91,8 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     num_ini = len(ini)
                     k = 1
                     while k < num_ini:
-                        if verbose:
-                            print("ini",ini)
+                        # if verbose:
+                        #     print("ini",ini)
 
                         if ini[k][0]-ini[k-1][1] < wake_thresh:
                             ini[k-1][1] = ini[k][1]
@@ -117,15 +117,15 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     boundaries[0].append(0)
                     boundaries[1].append(time_gaps[i]-1)
 
-                if verbose:
-                    print("boundaries",np.transpose(boundaries))
+                # if verbose:
+                #     print("boundaries",np.transpose(boundaries))
 
             else:
                 edges = np.concatenate(([0],np.diff(states[time_gaps[i-1]:time_gaps[i]])))
                 edges_index = edges.nonzero()[0]
                 transitions = [[k+time_gaps[i-1],edges[k]] for k in edges_index] 
-                if verbose:
-                    print("transitions",transitions)
+                # if verbose:
+                #     print("transitions",transitions)
 
                 if len(transitions) > 0:
                     if transitions[0][1] < 0:
@@ -148,8 +148,8 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     num_ini = len(ini)
                     k = 1
                     while k < num_ini:
-                        if verbose:
-                            print("ini",ini)
+                        # if verbose:
+                        #     print("ini",ini)
 
                         if ini[k][0]-ini[k-1][1] < wake_thresh:
                             ini[k-1][1] = ini[k][1]
@@ -174,15 +174,15 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     boundaries[0].append(time_gaps[i-1])
                     boundaries[1].append(time_gaps[i]-1)
 
-                if verbose:
-                    print("boundaries",np.transpose(boundaries))
+                # if verbose:
+                #     print("boundaries",np.transpose(boundaries))
 
             if i == num_gaps-1:
                 edges = np.concatenate(([0],np.diff(states[time_gaps[i]:n])))
                 edges_index = edges.nonzero()[0]
                 transitions = [[k+time_gaps[i],edges[k]] for k in edges_index]
-                if verbose:
-                    print("transitions",transitions)
+                # if verbose:
+                #     print("transitions",transitions)
 
                 if len(transitions) > 0:
                     if transitions[0][1] < 0:
@@ -205,8 +205,8 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     num_ini = len(ini)
                     k = 1
                     while k < num_ini:
-                        if verbose:
-                            print("ini",ini)
+                        # if verbose:
+                        #     print("ini",ini)
 
                         if ini[k][0]-ini[k-1][1] < wake_thresh:
                             ini[k-1][1] = ini[k][1]
@@ -231,16 +231,16 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
                     boundaries[0].append(time_gaps[i])
                     boundaries[1].append(n-1)
 
-                if verbose:
-                    print("boundaries",np.transpose(boundaries))
+                # if verbose:
+                #     print("boundaries",np.transpose(boundaries))
 
     else:
         edges = np.concatenate(([0],np.diff(states)))
         edges_index = edges.nonzero()[0]
         transitions = [[k,edges[k]] for k in edges_index]
 
-        if verbose:
-            print("transitions",transitions)
+        # if verbose:
+        #     print("transitions",transitions)
 
         if len(transitions) > 0:
             if transitions[0][1] < 0:
@@ -266,8 +266,8 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
             num_ini = len(ini)
             k = 1
             while k < num_ini:
-                if verbose:
-                    print("ini",ini)
+                # if verbose:
+                #     print("ini",ini)
 
                 if ini[k][0]-ini[k-1][1] < wake_thresh:
                     ini[k-1][1] = ini[k][1]
@@ -292,15 +292,15 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
             boundaries[0].append(0)
             boundaries[1].append(n-1)
 
-        if verbose:
-            print("boundaries",np.transpose(boundaries))
+        # if verbose:
+        #     print("boundaries",np.transpose(boundaries))
 
     boundaries = np.transpose(boundaries)
     num_ini = len(boundaries)
     k = 1
     while k < num_ini:
-        if verbose:
-            print("boundaries",boundaries)
+        # if verbose:
+        #     print("boundaries",boundaries)
 
         if boundaries[k][0]-boundaries[k-1][1] < wake_thresh:
             boundaries[k-1][1] = boundaries[k][1]
@@ -322,9 +322,9 @@ def nights_df(stamps,states,wake_thresh=60,sleep_thresh=120,nap_thresh=20,verbos
 
     # fig.show()
 
-    if verbose:
-        for item in boundaries:
-            print(stamps[item[0]],stamps[item[1]])
+    # if verbose:
+    #     for item in boundaries:
+    #         print(stamps[item[0]],stamps[item[1]])
 
     df = pd.DataFrame(boundaries,columns=["bt","gt"])
     df["nap"] = False

@@ -12,9 +12,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime, timedelta
 from scipy.signal import find_peaks as peak
-
-
 from cspd_functions import *
+
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pycspd"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 
@@ -387,7 +390,6 @@ class CSPD_GetUpTime_Refiner:
                    (high_short_window_activity_median_before_proportion < 1)
               ):
             refinement_window_end += 1   # Interval is stretched to the right
-            # print("gt refinement_window_end",refinement_window_end)
 
             valid_gap = self.datetime_gap_check(refinement_window_end)
 
@@ -418,10 +420,6 @@ class CSPD_GetUpTime_Refiner:
         refinement_window_start : int
                 Index of the first epoch of a refinement window.
         """
-
-        if self.verbose:
-            print("compute_refinement_window_start")
-
         refinement_window_start = initial_candidate
         if refinement_window_start < 0:
             refinement_window_start = 0
@@ -454,7 +452,6 @@ class CSPD_GetUpTime_Refiner:
                    )
               ):
             refinement_window_start -= 1    # Interval is stretched to the left
-            # print("gt refinement_window_start",refinement_window_start)
 
             if refinement_window_start > 0:
                 valid_gap = self.datetime_gap_check(refinement_window_start)
@@ -494,14 +491,9 @@ class CSPD_GetUpTime_Refiner:
         """
 
         refinement_window_end = refinement_window_start-1
-        if self.verbose:
-            print("bridging the gap")
-            print("end1",self.datetime_stamps[refinement_window_end])
 
         initial_candidate = refinement_window_start-2
         refinement_window_start = self.compute_refinement_window_start(initial_candidate,refinement_window_end)
-        if self.verbose:
-            print("start1",self.datetime_stamps[refinement_window_start])
 
         return refinement_window_start,refinement_window_end
 
@@ -548,8 +540,6 @@ class CSPD_GetUpTime_Refiner:
             if invalid_region_count > 0:
                 peaks_and_valleys = peaks_and_valleys.loc[:invalid_regions[0],:]
 
-            if self.verbose:
-                print("remove too tall peak\n",peaks_and_valleys)
 
         return peaks_and_valleys
 
@@ -594,9 +584,6 @@ class CSPD_GetUpTime_Refiner:
                 if invalid_regions[invalid_region_count-1] < peaks_and_valleys_count-2:
                     peaks_and_valleys = peaks_and_valleys.loc[invalid_regions[invalid_region_count-1]:,:]
 
-            if self.verbose:
-                print("remove long valley\n",peaks_and_valleys)
-
         return peaks_and_valleys
 
 
@@ -630,8 +617,6 @@ class CSPD_GetUpTime_Refiner:
         # that this refinement step mirror that of bedtime refine-
         # ment.
         last_index = peaks_and_valleys_count-1
-
-        # print(peaks_and_valleys)
 
         if (peaks_and_valleys_count > 2):
             # First region is treated separately and may be remo- 
@@ -797,9 +782,6 @@ class CSPD_GetUpTime_Refiner:
                         peaks_and_valleys_count = len(peaks_and_valleys)
                         last_index = peaks_and_valleys_count-1
 
-                        if self.verbose:
-                            print("t",t,"peaks_and_valleys\n",peaks_and_valleys)
-
                     else:
                         t += 1
 
@@ -908,16 +890,11 @@ class CSPD_GetUpTime_Refiner:
             if self.getuptime_score_first_candidate:
                 getuptime_candidate_scores.at[0,"score"] += self.getuptime_first_candidate_score
 
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
-
             # The candidate with the most abrupt peak in median
             # activity difference gets an extra score.
             getuptime_candidate_scores.sort_values(by=["activity_median_difference","candidate"],axis=0,ascending=[False,True],ignore_index=True,inplace=True)
             getuptime_candidate_scores.sort_values(by=["activity_median_difference","candidate"],axis=0,ascending=False,ignore_index=True,inplace=True)
             getuptime_candidate_scores.at[0,"score"] += self.getuptime_best_median_difference_candidate_score
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
 
 
             # The candidate that's closest to the first short-win-
@@ -929,10 +906,7 @@ class CSPD_GetUpTime_Refiner:
                 best_crossing_distance_candidate = np.argmin(metric_crossing_distance)
 
                 getuptime_candidate_scores.loc[getuptime_candidate_scores["candidate"]==getuptime_candidates[best_crossing_distance_candidate],"score"] += self.getuptime_best_crossing_distance_candidate_score
-                if self.verbose:
-                    print("short_window_filter_metric_crossing_up",short_window_filter_metric_crossing_up)
-                    print("best_crossing_distance_candidate",best_crossing_distance_candidate)
-                    print("getuptime_candidate_scores\n",getuptime_candidate_scores)
+
             
             # Lastly, the neighborhood of each candidate is evalu-
             # ated and scores are given based on their number of
@@ -950,9 +924,7 @@ class CSPD_GetUpTime_Refiner:
                 g = candidate
                 while valid_gap and (g+1 < after_candidate_window_end):
                     valid_gap,datetime_seconds_gap = self.datetime_gap_check(g,direction="forward",return_gap=True)
-                    if not valid_gap:
-                        if self.verbose:
-                            print("gap",datetime_seconds_gap)
+
                     g += 1
            
                 if valid_gap:
@@ -968,9 +940,6 @@ class CSPD_GetUpTime_Refiner:
                 candidate_index += 1
 
             thresholded_getuptime_candidates = getuptime_candidate_scores[getuptime_candidate_scores["thresholded"]]
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
-                print("thresholded_getuptime_candidates\n",thresholded_getuptime_candidates)
 
             if len(getuptime_candidate_scores[getuptime_candidate_scores["gap_after"]==False]) > 0:
                 if len(thresholded_getuptime_candidates) == 0:   # If there aren't any valid candidates, the one with the least above-metric epochs is chosen
@@ -984,31 +953,16 @@ class CSPD_GetUpTime_Refiner:
                         thresholded_score_factor = (-self.getuptime_thresholded_candidate_score_amplitude/1e-3)
                     
                     thresholded_getuptime_candidates.loc[:,"score"] = thresholded_score_factor*(thresholded_getuptime_candidates.loc[:,"epochs_below_metric_after"]-self.getuptime_maximum_epochs_above_metric_after_candidate)
-                    if self.verbose:
-                        print("scored thresholded_getuptime_candidates\n",thresholded_getuptime_candidates)
 
                     getuptime_candidate_scores.loc[getuptime_candidate_scores["thresholded"],"score"] += thresholded_getuptime_candidates["score"]+self.getuptime_thresholded_candidate_score_minimum
 
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
-
             getuptime_candidate_scores.sort_values(by=["score","candidate"],axis=0,ascending=False,ignore_index=True,inplace=True)
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
-
             # The highest scored candidate is chosen as the refi-
             # ned getuptimes.
             refined_getuptime = self.refinement_window_start + int(getuptime_candidate_scores.at[0,"candidate"])
-            if self.verbose:
-                print("getuptime_candidate_scores\n",getuptime_candidate_scores)
-                print("top_grader",getuptime_candidate_scores.at[0,"candidate"])
 
         else:
             refined_getuptime = self.initial_transition_candidate
-
-        if self.verbose:
-            print("refined_getuptime",refined_getuptime,self.datetime_stamps[refined_getuptime])
-            # input()
 
         return refined_getuptime
 
@@ -1065,19 +1019,11 @@ class CSPD_GetUpTime_Refiner:
         self.next_transition = next_transition
         self.verbose = verbose
 
-        if self.verbose:
-            print("\n\ngetup time refinement")
-            print("initial",self.datetime_stamps[self.initial_transition_candidate])
-
         initial_candidate = self.initial_transition_candidate+1
         refinement_window_end = self.compute_refinement_window_end(initial_candidate)
-        if self.verbose:
-            print("end0",self.datetime_stamps[refinement_window_end])
 
         initial_candidate =  self.initial_transition_candidate-1
         refinement_window_start = self.compute_refinement_window_start(initial_candidate,refinement_window_end)     
-        if self.verbose:
-            print("start0",self.datetime_stamps[refinement_window_start])
 
         valid_gap = self.datetime_gap_check(refinement_window_start)
         if not valid_gap:
@@ -1115,40 +1061,19 @@ class CSPD_GetUpTime_Refiner:
                 region_activity = self.refinement_window_activity[start:end]
                 peaks_and_valleys.at[region_index,"above_fixed_threshold_proportion"] = sum(np.where(region_activity > 10,1,0))/(end-start)
 
-        if self.verbose:
-            print("metric",self.metric)
-            print("start",self.datetime_stamps[self.refinement_window_start])
-            print("end",self.datetime_stamps[self.refinement_window_end])
-            print("peaks_and_valleys\n",peaks_and_valleys)
-
         peaks_and_valleys = self.remove_after_long_tall_peak(peaks_and_valleys)
 
         peaks_and_valleys = self.remove_before_long_valley(peaks_and_valleys)
 
         self.peaks_and_valleys = self.filter_peaks_and_valleys(peaks_and_valleys)        
-        if self.verbose:
-            print("filtered peaks_and_valleys\n",peaks_and_valleys)
-
         peaks_and_valleys_count = len(self.peaks_and_valleys)
-        
-        if self.verbose:
-                print("initial borders")
-                print(self.refinement_window_start)
-                print(self.refinement_window_end)
-                print(self.peaks_and_valleys)
+
 
         refinement_window_start = self.refinement_window_start+self.peaks_and_valleys.at[0,"start"]
         self.refinement_window_end = self.refinement_window_start+self.peaks_and_valleys.at[peaks_and_valleys_count-1,"end"]
         if self.refinement_window_end >= self.data_length:
                 self.refinement_window_end = self.data_length-1
         self.refinement_window_start = refinement_window_start
-
-
-        if self.verbose:
-                print("filtered borders")
-                print(self.refinement_window_start)
-                print(self.refinement_window_end)
-                print("")
 
         self.refinement_window_activity_median = self.compute_refinement_window_median(self.refinement_window_start,self.refinement_window_end)
 
@@ -1161,9 +1086,7 @@ class CSPD_GetUpTime_Refiner:
 
         if self.update_peaks_and_valleys:
                 self.peaks_and_valleys = identify_peaks_and_valleys(self.refinement_window_activity,self.refinement_window_activity_median,self.metric)
-                if self.verbose:
-                        print("updated peaks_and_valleys")
-                        print(self.peaks_and_valleys)
+
         else:
                 self.peaks_and_valleys.at[0,"start"] = 0
                 self.peaks_and_valleys.at[0,"end"] = self.peaks_and_valleys.at[0,"start"]+self.peaks_and_valleys.at[0,"length"]
@@ -1172,8 +1095,6 @@ class CSPD_GetUpTime_Refiner:
                     self.peaks_and_valleys.at[i,"end"] = self.peaks_and_valleys.at[i,"start"]+self.peaks_and_valleys.at[i,"length"]
 
         getuptime_candidates = self.identify_getuptime_candidates(self.peaks_and_valleys)                    
-        if self.verbose:
-            print("getuptime_candidates",getuptime_candidates)
 
         short_window_filter_metric_crossing = np.where(self.short_window_activity_median[self.refinement_window_start:self.refinement_window_end+1] >= self.metric, 1, 0)
         short_window_filter_metric_crossing = np.diff(np.concatenate(([0],short_window_filter_metric_crossing)))

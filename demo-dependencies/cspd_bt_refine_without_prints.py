@@ -13,8 +13,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime, timedelta
 from scipy.signal import find_peaks as peak
-
 from cspd_functions import *
+
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pycspd"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 
@@ -497,14 +501,8 @@ class CSPD_BedTime_Refiner:
         """
 
         refinement_window_start = refinement_window_end+1
-        if self.verbose:
-            print("bridging the gap")
-            print("start1",self.datetime_stamps[refinement_window_start])
-
         initial_candidate = refinement_window_start+1
         refinement_window_end = self.compute_refinement_window_end(initial_candidate,refinement_window_start)
-        if self.verbose:
-            print("end1",self.datetime_stamps[refinement_window_end])
 
         return refinement_window_start,refinement_window_end
 
@@ -598,32 +596,11 @@ class CSPD_BedTime_Refiner:
         peaks_and_valleys["valid"] = True
         peaks_and_valleys.loc[peaks_and_valleys["class"] == "v","valid"] = peaks_and_valleys.loc[peaks_and_valleys["class"] == "v","length"] < self.bedtime_high_probability_sleep_valley_length
 
-        if self.verbose:
-            print("metric",self.metric)
-            print("start",self.datetime_stamps[self.refinement_window_start])
-            print("end",self.datetime_stamps[self.refinement_window_end])
-            print("peaks_and_valleys\n",peaks_and_valleys)
-
-            wt = self.datetime_stamps[self.refinement_window_start:self.refinement_window_end+1]
-            fs=16
-            plt.figure()
-            plt.plot(wt,self.refinement_window_levels[self.refinement_window_start:self.refinement_window_end+1],lw=3,color="black",label="levels")
-            plt.plot(wt,self.refinement_window_activity,lw=0.5,label="self.activity")
-            plt.plot(wt,self.refinement_window_activity_median,label="median")
-            plt.plot(wt,np.insert(self.refinement_window_activity_median_difference_smoothed,0,0),label="diff")
-            plt.plot(wt,self.metric*np.ones(len(self.refinement_window_activity)),linestyle="--",label="metric")
-            plt.legend(fontsize=fs)
-            plt.title("Unfiltered levels")
-            # plt.show()
-
         if self.do_remove_after_long_valley:
             invalid_valleys = peaks_and_valleys[peaks_and_valleys["valid"] == False].index.to_numpy()
             invalid_valley_count = len(invalid_valleys)
             if invalid_valley_count > 0:
                 peaks_and_valleys = peaks_and_valleys.loc[0:invalid_valleys[0],:]
-
-            if self.verbose:
-                print("remove long valley\n",peaks_and_valleys)
 
         return peaks_and_valleys
 
@@ -657,11 +634,6 @@ class CSPD_BedTime_Refiner:
         # Peaks that are too long are classified as invalid.
         peaks_and_valleys["valid"] = True
         peaks_and_valleys.loc[peaks_and_valleys["class"] == "p","valid"] = peaks_and_valleys.loc[peaks_and_valleys["class"] == "p","length"] < self.bedtime_high_probability_awake_peak_length
-        if self.verbose:
-            print("metric",self.metric)
-            print("start",self.datetime_stamps[self.refinement_window_start])
-            print("end",self.datetime_stamps[self.refinement_window_end])
-            print("peaks_and_valleys\n",peaks_and_valleys)
 
         if self.do_remove_before_long_peak:
             invalid_peaks = peaks_and_valleys[peaks_and_valleys["valid"] == False].index.to_numpy()
@@ -669,9 +641,6 @@ class CSPD_BedTime_Refiner:
             if invalid_peak_count > 0:
                 if invalid_peaks[invalid_peak_count-1] < peaks_and_valleys_count-1:
                     peaks_and_valleys = peaks_and_valleys.loc[invalid_peaks[invalid_peak_count-1]:,:]
-
-            if self.verbose:
-                print("remove long peak\n",peaks_and_valleys)
 
         return peaks_and_valleys
 
@@ -710,9 +679,6 @@ class CSPD_BedTime_Refiner:
             invalid_peak_count = len(invalid_peaks)
             if invalid_peak_count > 0:
                 peaks_and_valleys = peaks_and_valleys.loc[invalid_peaks[invalid_peak_count-1]:,:]
-
-            if self.verbose:
-                print("remove too tall peak\n",peaks_and_valleys)
 
         return peaks_and_valleys
 
@@ -755,7 +721,6 @@ class CSPD_BedTime_Refiner:
             region_index = 1
             while (region_index < peaks_and_valleys_count) and ((peaks_and_valleys_count > 2) and (peaks_and_valleys_count != 3)):
                 remove = False
-                # print("bt region_index",region_index)
 
                 # All regions are subjected to length-based threshol-
                 # ding and, if not filtered, they are evaluated ba-
@@ -858,9 +823,6 @@ class CSPD_BedTime_Refiner:
                     peaks_and_valleys = remove_peak_valley(peaks_and_valleys,region_index,self.refinement_window_activity,self.metric)
                     peaks_and_valleys_count = len(peaks_and_valleys)
 
-                    if self.verbose:    
-                        print("intermediate peaks_and_valleys region_index",region_index,"\n",peaks_and_valleys)
-
                 else:
                     region_index += 1
 
@@ -949,10 +911,6 @@ class CSPD_BedTime_Refiner:
         short_window_filter_metric_crossing_up = (short_window_filter_metric_crossing > 0).nonzero()[0]
         short_window_filter_metric_crossing_down = (short_window_filter_metric_crossing < 0).nonzero()[0]
 
-        if self.verbose:
-            print("short_window_filter_metric_crossing_up",short_window_filter_metric_crossing_up)
-            print("short_window_filter_metric_crossing_down",short_window_filter_metric_crossing_down)
-
         if len(short_window_filter_metric_crossing_up) > 0:
             # If there are multiple metric crossing-up's, all
             # candidates preceding the last crossing are eli-
@@ -960,9 +918,6 @@ class CSPD_BedTime_Refiner:
             last_short_window_filter_metric_crossing_up = short_window_filter_metric_crossing_up[len(short_window_filter_metric_crossing_up)-1]
             mask = np.where(bedtime_candidates >= last_short_window_filter_metric_crossing_up,True,False)
             bedtime_candidates = bedtime_candidates[mask]
-            if self.verbose:
-                print("bedtime_candidates_crossings_filter bedtime_candidates\n",bedtime_candidates)
-                
 
         return bedtime_candidates, short_window_filter_metric_crossing_down
 
@@ -1024,8 +979,6 @@ class CSPD_BedTime_Refiner:
             # ting feature for the candidate, so it may be scored.
             if self.bedtime_score_last_candidate:
                 bedtime_candidate_scores.at[bedtime_candidates_count-1,"score"] += self.bedtime_last_candidate_score
-                if self.verbose:
-                    print("self.bedtime_score_last_candidate bedtime_candidate_scores\n",bedtime_candidate_scores)
 
             # The candidate that's closest to the last short-win-
             # down-median-filtered activity metric crossing-down 
@@ -1035,18 +988,11 @@ class CSPD_BedTime_Refiner:
                 metric_crossing_distance = np.absolute(bedtime_candidates - short_window_filter_metric_crossing_down)
                 best_crossing_distance_candidate = np.argmin(metric_crossing_distance)
                 bedtime_candidate_scores.at[best_crossing_distance_candidate,"score"] += self.bedtime_best_crossing_distance_candidate_score
-                if self.verbose:
-                    print("short_window_filter_metric_crossing_down",short_window_filter_metric_crossing_down)
-                    print("best_crossing_distance_candidate",best_crossing_distance_candidate)
-                    print("bedtime_candidate_scores\n",bedtime_candidate_scores)
 
             # The candidate with the most abrupt valley in median
             # activity difference gets an extra score.
             bedtime_candidate_scores.sort_values(by=["activity_median_difference",],axis=0,ignore_index=True,inplace=True)
             bedtime_candidate_scores.at[0,"score"] += self.bedtime_best_median_difference_candidate_score
-
-            if self.verbose:
-                print("bedtime_candidate_scores\n",bedtime_candidate_scores)
 
             # Lastly, the neighborhood of each candidate is evalu-
             # ated and scores are given based on their number of
@@ -1065,9 +1011,7 @@ class CSPD_BedTime_Refiner:
                     g = candidate
                     while valid_gap and (g+1 < after_candidate_window_end):
                         valid_gap,datetime_seconds_gap = self.datetime_gap_check(g,direction="forward",return_gap=True)
-                        if not valid_gap:
-                            if self.verbose:
-                                print("gap",datetime_seconds_gap)
+
                         g += 1
                     
                     if valid_gap:
@@ -1083,10 +1027,7 @@ class CSPD_BedTime_Refiner:
                     candidate_index += 1
 
                 thresholded_bedtime_candidates = bedtime_candidate_scores[bedtime_candidate_scores["thresholded"]]
-                if self.verbose:
-                    print("bedtime_candidate_scores\n",bedtime_candidate_scores)
-                    print("thresholded_bedtime_candidates\n",thresholded_bedtime_candidates)
-                    
+
 
                 if len(bedtime_candidate_scores[bedtime_candidate_scores["gap_after"]==False]) > 0:
                     if len(thresholded_bedtime_candidates) == 0:   # If there aren't any valid candidates, the one with the least above-metric epochs is chosen
@@ -1101,18 +1042,9 @@ class CSPD_BedTime_Refiner:
 
                         thresholded_bedtime_candidates.loc[:,"score"] = thresholded_score_factor*(thresholded_bedtime_candidates.loc[:,"epochs_above_metric_after"]-self.bedtime_maximum_epochs_above_metric_after_candidate)
 
-                        if self.verbose:
-                            print("scored thresholded_candidates\n",thresholded_bedtime_candidates["score"])
-
                         bedtime_candidate_scores.loc[bedtime_candidate_scores["thresholded"],"score"] += thresholded_bedtime_candidates["score"]+self.bedtime_thresholded_candidate_score_minimum
 
-                if self.verbose:
-                    print("bedtime_candidate_scores\n",bedtime_candidate_scores)
-
                 bedtime_candidate_scores.sort_values(by=["score","candidate"],axis=0,ascending=False,ignore_index=True,inplace=True)
-                if self.verbose:
-                    print("bedtime_candidate_scores\n",bedtime_candidate_scores)
-                    print("top_grader",bedtime_candidate_scores.at[0,"candidate"])
 
                 # The highest scored candidate is chosen as the refi-
                 # ned bedtime.
@@ -1121,8 +1053,6 @@ class CSPD_BedTime_Refiner:
                                 (bedtime_candidate_scores.at[0,"candidate"]-bedtime_candidate_scores.at[1,"candidate"] > 60) and 
                                 (bedtime_candidate_scores.at[1,"thresholded"] and (not bedtime_candidate_scores.at[0,"thresholded"]))
                             ):
-                                if self.verbose:
-                                        print("second best")
                                 refined_bedtime = self.refinement_window_start + int(bedtime_candidate_scores.at[1,"candidate"])  
                         else:
                                 refined_bedtime = self.refinement_window_start + int(bedtime_candidate_scores.at[0,"candidate"])  
@@ -1134,10 +1064,6 @@ class CSPD_BedTime_Refiner:
 
         else:
             refined_bedtime = self.initial_transition_candidate    # Mantains if no edges are detected
-
-        if self.verbose:
-            print("refined_bedtime",self.datetime_stamps[refined_bedtime])
-            # input()
 
         return refined_bedtime
 
@@ -1195,19 +1121,12 @@ class CSPD_BedTime_Refiner:
         self.next_transition = next_transition
         self.verbose = verbose
 
-        if self.verbose:
-            print("\n\n\nbed time refinement")
-            print("initial",self.datetime_stamps[self.initial_transition_candidate])
 
         initial_candidate = self.initial_transition_candidate-1
         refinement_window_start = self.compute_initial_refinement_window_start(initial_candidate)        
-        if self.verbose:
-            print("start0",self.datetime_stamps[refinement_window_start])
 
         initial_candidate = self.initial_transition_candidate+1
         refinement_window_end = self.compute_refinement_window_end(initial_candidate,refinement_window_start)
-        if self.verbose:
-            print("end0",self.datetime_stamps[refinement_window_end])
 
         valid_gap = self.datetime_gap_check(refinement_window_end)
         if not valid_gap:
@@ -1215,9 +1134,6 @@ class CSPD_BedTime_Refiner:
 
         else:
             refinement_window_start = self.compute_improved_refinement_window_start(refinement_window_start,refinement_window_end)
-            if self.verbose:
-                print("start1",self.datetime_stamps[refinement_window_start])     
-
 
         refinement_window_datetime_difference = datetime_diff(self.datetime_stamps[refinement_window_start:refinement_window_end+1])
         refinement_window_datetime_gaps = np.where(refinement_window_datetime_difference >= self.maximum_allowed_gap,1,0)
@@ -1225,10 +1141,8 @@ class CSPD_BedTime_Refiner:
             first_gap_location = list(refinement_window_datetime_gaps).index(1)
             if first_gap_location > len(refinement_window_datetime_difference)-first_gap_location:
                 refinement_window_end = refinement_window_start + first_gap_location - 1
-                # print("end1",self.datetime_stamps[refinement_window_end])
             else:
                 refinement_window_start = refinement_window_start + first_gap_location + 1
-                # print("start2",self.datetime_stamps[refinement_window_start])
 
 
         if refinement_window_start >= refinement_window_end:
@@ -1249,8 +1163,6 @@ class CSPD_BedTime_Refiner:
         peaks_and_valleys = identify_peaks_and_valleys(self.refinement_window_activity,self.refinement_window_activity_median,self.metric)   # Transitions relative to the median filter and chosen metric
         peaks_and_valleys_count = len(peaks_and_valleys)
 
-        # print("initial peaks_and_valleys")
-        # print(peaks_and_valleys)
 
         for region_index in range(peaks_and_valleys_count):
             start = int(self.refinement_window_start + peaks_and_valleys.at[region_index,"start"])
@@ -1270,27 +1182,17 @@ class CSPD_BedTime_Refiner:
         peaks_and_valleys.index = range(peaks_and_valleys_count)
         
         self.peaks_and_valleys = self.filter_peaks_and_valleys(peaks_and_valleys)
-        if self.verbose:
-            print("filtered peaks_and_valleys\n",self.peaks_and_valleys)
 
         peaks_and_valleys_count = len(self.peaks_and_valleys)
 
-        if self.verbose:
-                print("initial borders")
-                print(self.refinement_window_start)
-                print(self.refinement_window_end)
-        
+
         refinement_window_start = self.refinement_window_start+self.peaks_and_valleys.at[0,"start"]
         self.refinement_window_end = self.refinement_window_start+self.peaks_and_valleys.at[peaks_and_valleys_count-1,"end"]
         if self.refinement_window_end >= self.data_length:
             self.refinement_window_end = self.data_length-1
         self.refinement_window_start = refinement_window_start
 
-        if self.verbose:
-                print("filtered borders")
-                print(self.refinement_window_start)
-                print(self.refinement_window_end)
-                print("")
+
 
         self.refinement_window_activity_median = self.compute_refinement_window_median(self.refinement_window_start,self.refinement_window_end)
 
@@ -1303,9 +1205,7 @@ class CSPD_BedTime_Refiner:
 
         if self.update_peaks_and_valleys:
                 self.peaks_and_valleys = identify_peaks_and_valleys(self.refinement_window_activity,self.refinement_window_activity_median,self.metric)
-                if self.verbose:
-                        print("updated peaks_and_valleys")
-                        print(self.peaks_and_valleys)
+
         else:
                 self.peaks_and_valleys.at[0,"start"] = 0
                 self.peaks_and_valleys.at[0,"end"] = self.peaks_and_valleys.at[0,"start"]+self.peaks_and_valleys.at[0,"length"]
@@ -1315,8 +1215,6 @@ class CSPD_BedTime_Refiner:
 
 
         self.bedtime_candidates = self.identify_bedtime_candidates(self.peaks_and_valleys)
-        if self.verbose:
-            print("bedtime_candidates\n",self.bedtime_candidates)
 
         filtered_bedtime_candidates, short_window_filter_metric_crossing_down = self.bedtime_candidates_crossings_filter(self.bedtime_candidates)
         if self.do_bedtime_candidates_crossings_filter:

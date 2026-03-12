@@ -8,6 +8,10 @@ from scipy.signal import find_peaks as peak
 
 import sys,inspect,os
 
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pyoffwrist"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import segmentation,zero_prop,below_prop,var_filter
 
 
@@ -186,12 +190,5 @@ def describe_offwrist_periods(offwrist_periods,activity,temperature,temperature_
 
     offwrist_description["border_activity_concentration"] = offwrist_description["start_activity_weight"] + offwrist_description["end_activity_weight"]
     offwrist_description["border_temperature_concentration"] = offwrist_description["start_temperature_weight"] + offwrist_description["end_temperature_weight"]
-
-
-    if verbose:
-        print(offwrist_description)
-
-    if save:
-        offwrist_description.to_csv(path_or_buf="verbose/"+file+"_report.csv",sep=';',header=True,index_label=None,float_format="e")
 
     return offwrist_description

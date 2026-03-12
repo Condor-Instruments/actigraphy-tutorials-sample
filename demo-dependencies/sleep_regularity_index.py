@@ -46,14 +46,14 @@ def actigraphy_calculate_SRI(df,sleep,epoch=60,visualize=False,verbose=False):
         if num_epochs > 0:
             sri = -100 + 200*(regular_epochs/num_epochs)
 
-        if verbose:
-            print("num_epochs",num_epochs)
-            print("regular_epochs",regular_epochs)
-            print("sri",sri)
+        # if verbose:
+        #     print("num_epochs",num_epochs)
+        #     print("regular_epochs",regular_epochs)
+        #     print("sri",sri)
 
-        if visualize:
-            visual.to_csv("visualize.csv",header=True,index=False)
-    else:
-        print("inconsistent data, could not compute SRI")
+        # if visualize:
+        #     visual.to_csv("visualize.csv",header=True,index=False)
+    # else:
+    #     print("inconsistent data, could not compute SRI")
 
     return sri

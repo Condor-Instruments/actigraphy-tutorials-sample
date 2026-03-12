@@ -417,6 +417,3 @@ def pad_signal(signal,pad_size):
     padded_signal = np.append(padded_signal,ending_pad)
 
     return padded_signal
-
-# activity_counts = np.array([1,1,1,2,3,4])
-# print(calculate_total_activity_counts(activity_counts,60))

@@ -17,6 +17,11 @@ from cspd_functions import *
 from cspd_bt_refine import CSPD_BedTime_Refiner
 from cspd_gt_refine import CSPD_GetUpTime_Refiner
 from crespo_algorithm import CrespoAlgorithm
+
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pycspd"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 # pd.set_option('display.max_rows', None)
@@ -431,8 +436,6 @@ class CSPD:
             median_filter_short_window = int(self.median_filter_short_window*60/self.duration)
             short_window_activity_median_minimum_high_epochs = int(self.short_window_activity_median_minimum_high_epochs*60/self.duration)
 
-            if verbose:
-                print("sleep_median_activity_quantile_threshold ",self.sleep_median_activity_quantile_threshold)
 
             # sleep_activity = self.ac
 
@@ -526,14 +529,6 @@ class CSPD:
             transitions = [[i,sleep_period_borders[i]] for i in sleep_period_borders_index]
             refined_transitions = transitions.copy()
             num_transitions = len(refined_transitions)
-
-            if verbose:
-                print("pre-refinement transitions")
-                for transition in transitions:
-                    if transition[1] > 0:
-                        print("getup time: ",self.datetime_stamps[transition[0]])
-                    else:
-                        print("bed time: ",self.datetime_stamps[transition[0]])
 
             if self.condition == 1:
                 median_excursion_threshold *= 3.5
@@ -678,11 +673,6 @@ class CSPD:
 
                 if refined_transitions[-1][1] > 0:
                     refined_output[refined_transitions[-1][0]:data_length] = 1
-
-                if verbose:
-                    print("window_metrics")
-                    print(window_metrics)
-                    print("mean_window_metrics",np.mean(window_metrics))
 
             else:
                 refined_output = np.ones(data_length)

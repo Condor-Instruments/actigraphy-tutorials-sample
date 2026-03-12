@@ -6,13 +6,15 @@ import time, os, inspect, sys
 import pandas as pd
 from datetime import datetime, timedelta, date
 from scipy.ndimage import binary_closing, binary_opening
-
-
 from cspd_functions import *
+
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pycspd"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
-np.set_printoptions(threshold=sys.maxsize)
-
+# np.set_printoptions(threshold=sys.maxsize)
 
 class CrespoAlgorithm:
     def __init__(self,
@@ -305,11 +307,6 @@ class CrespoAlgorithm:
                 self.condition = 2
 
             improved_sleep_detection = np.where(adaptive_median_filtered_activity > sleep_median_activity_threshold, 1, 0)    # Quantile thresholding operation
-
-            # print("invalid_zeros_mask",invalid_zeros_mask)
-            # print("median_filter_half_window_size",median_filter_half_window_size)
-            # print("maximum_activity",maximum_activity)
-            # print("pad_size",pad_size)
 
         else:
             # The nap detection combines the results of a thresholding

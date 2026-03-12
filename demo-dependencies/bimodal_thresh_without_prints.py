@@ -23,6 +23,10 @@ from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
 
 import sys, inspect, os
 
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pyoffwrist"))]
+
+# sys.path.insert(0, root+"/pyauxiliary")
 from functions import *
 
 
@@ -72,12 +76,6 @@ def bimodal_thresh(data,nbins=100,plot=False,save_plot=False,verbose=False,title
         sigma1,sigma2 = [np.sqrt(gm.covariances_[0+first][0][0]),np.sqrt(gm.covariances_[1-first][0][0])]
         a1,a2 = [gm.weights_[0+first]*np.max(counts),gm.weights_[1-first]*np.max(counts)]
 
-        # if verbose:
-        #     print(f'len_data={len(data)}')
-        #     print(f'mu1={mu1}, mu2={mu2}')
-        #     print(f'sigma1={sigma1}, sigma2={sigma2}')
-        #     print(f'a1={a1}, a2={a2}')
-
         params_gm_dict = {"mu1":mu1,"sigma1":sigma1,"a1":a1,"mu2":mu2,"sigma2":sigma2,"a2":a2}
         dist_gm = np.apply_along_axis(bimodal,0,x,**params_gm_dict)
         g1 = np.apply_along_axis(gauss,0,np.linspace(0,1,10000),**{"mu":mu1,"sigma":sigma1,"a":a1})
@@ -101,10 +99,6 @@ def bimodal_thresh(data,nbins=100,plot=False,save_plot=False,verbose=False,title
         if mu2 <= mu1:
             mu2 = mu1+2/nbins
 
-
-        # print(start)
-        # print(end)
-        
         dif_thresh_id = start+np.argmin(dif[start:end])
         dif_thresh_id = int(round(dif_thresh_id*nbins/10000))
         dif_thresh = bins[dif_thresh_id]
@@ -121,62 +115,12 @@ def bimodal_thresh(data,nbins=100,plot=False,save_plot=False,verbose=False,title
         else:
             thresh_id = thresh_id_1
 
-        # if last_min:
-        #     while counts_filt[thresh_id+1] == counts_filt[thresh_id]:
-        #         thresh_id += 1
         thresh = bins[thresh_id]        
 
     ash_d = ashman_d(mu1,sigma1,mu2,sigma2)
 
-    # av = counts_filt[thresh_id]
-    # if a1 > a2:
-    #     bimodal_amplitude = (a2-av)/av
-    # else:
-    #     bimodal_amplitude = (a1-av)/av
-
-    if verbose:
-        print(f'mu1={mu1}, mu2={mu2}')
-        print(f'sigma1={sigma1}, sigma2={sigma2}')
-        print(f'a1={a1}, a2={a2}')
-        print(f'ashman_d={ash_d}')
-        # print(f'bimodal_amplitude={bimodal_amplitude}')
-        print(f'thresh={thresh}')
-        print(f'dif_thresh={dif_thresh}')
-        # print((mu1 < nbins/2) and (mu2 < nbins/2))
-
-    # if (ash_d > 1.5) and (ash_d < 2.6):
-    #     plot = True
-
-    if (n > 1) and (plot or save_plot):
-        plt.figure(figsize=(24,18))
-        plt.plot(x,counts,label="counts")
-        plt.plot(x,counts_filt,label="counts_filt")
-        plt.plot(x,dist_gm,label="dist_gm")
-        markerline, stemlines, baseline = plt.stem([thresh_id/nbins,dif_thresh_id/nbins],[counts_filt[thresh_id],counts_filt[dif_thresh_id]],label="divide",linefmt="black",markerfmt="o")
-        markerline.set_markerfacecolor('black')
-        markerline.set_markersize(10)
-        plt.grid()
-        plt.legend()
-        # plt.title(title+",thresh="+str(thresh)+",dthresh="+str(dif_thresh)+",d="+str(ash_d)+",b="+str(bimodal_amplitude))
-        plt.title(title+",thresh="+str(thresh)+",dthresh="+str(dif_thresh)+",d="+str(ash_d))
-
-        if plot and (not save_plot):
-            plt.show()
-        elif (not plot) and save_plot:
-            plt.savefig(fname,bbox_inches="tight")
-            plt.close()
-        elif plot and save_plot:
-            plt.show()
-            plt.savefig(fname,bbox_inches="tight")
-            plt.close()
-        else:
-            plt.close()
-
-
     if thresh < min_thresh:
         thresh = min_thresh
-        if verbose:
-            print("clamped to thresh_min")
 
     if dev:
         if dthresh:

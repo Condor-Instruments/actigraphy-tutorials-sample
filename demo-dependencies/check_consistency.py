@@ -49,7 +49,34 @@ def check_gap(time_index,duration):
     return check_gap
 
 def consistency_check(data,duration):
-    consistency = pd.concat([check_1970(data.index),check_2000(data.index),check_backward(data.index),check_gap(data.index,duration)],ignore_index=True)
+    check_1970_df = check_1970(data.index)
+    check_2000_df = check_2000(data.index)
+    check_backward_df = check_backward(data.index)
+    check_gap_df = check_gap(data.index,duration)
+
+    consistency = pd.DataFrame(index=[],columns=["desc","gap","index","from","to","stamp"])
+
+    if len(check_1970_df) > 0:
+        consistency = check_1970_df.copy()
+
+    if len(check_2000_df) > 0:
+        if len(consistency) > 0:
+            consistency = pd.concat([check_2000_df,consistency],ignore_index=True)
+        else:
+            consistency = check_2000_df.copy()
+
+    if len(check_gap_df) > 0:
+        if len(consistency) > 0:
+            consistency = pd.concat([check_gap_df,consistency],ignore_index=True)
+        else:
+            consistency = check_gap_df.copy()
+
+    if len(check_backward_df) > 0:
+        if len(consistency) > 0:
+            consistency = pd.concat([check_backward_df,consistency],ignore_index=True)
+        else:
+            consistency = check_backward_df.copy()
+
     consistency["misc"] = np.nan
     consistency["ignore"] = False
     consistency.sort_values("index",ignore_index=True,inplace=True)

@@ -9,15 +9,21 @@ import numpy as np
 
 from contextlib import redirect_stdout
 
+from bimodal_thresh import bimodal_thresh
+from bimodal_offwrist_feature import bimodal_offwrist_feature
+
 from bimodal_offwrist_refine import BimodalOffwristRefiner
+from bimodal_offwrist_refine_release import BimodalOffwristRefiner
+
 from sklearn.model_selection import ParameterGrid
 from scipy.stats import mode
 
+# folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# root = folder[0:(len(folder)-len("pyoffwrist"))]
 
-from bimodal_thresh_development import bimodal_thresh
-from bimodal_offwrist_feature import bimodal_offwrist_feature
+# sys.path.insert(0, root+"/pyauxiliary")
+# from functions import quantile_filter,norm_01,zero_prop,diff5,zero_sequences
 from functions import *
-
 
 # Features to be extracted during data processing
 activity_features = ["signal","median"]
@@ -116,9 +122,6 @@ parameter_grid = list(ParameterGrid(trust_grid))
 
 # neccessary columns: PIM, TEMPERATURE, EXT TEMPERATURE, DATE/TIME
 def offwrist_wrapper_acttrust(df,verbose=False,file_verbose=False,filename=""):
-    # config = pd.read_csv(folder+"/offwrist_config.csv",sep=';',header=0,index_col=0)
-    # config = config.at[0,"config"]
-
     refine_verbose = 0
     if verbose:
         refine_verbose = 3
@@ -126,17 +129,7 @@ def offwrist_wrapper_acttrust(df,verbose=False,file_verbose=False,filename=""):
     if len(filename) > 0:
         filename = filename + "_"
 
-    # print("refine_verbose",refine_verbose)
-    # input()
-
-    # config = 7
-    # parameter = parameter_grid[config]
-    # # Parameter initialization
-    # offwrist_maximum_temperature_difference_median = parameter["offwrist_maximum_temperature_difference_median"]
-    # offwrist_minimum_temperature_difference_median = parameter["offwrist_minimum_temperature_difference_median"]    
-
     data = df[df["TEMPERATURE"] > 0]
-    # data = data[data["EXT TEMPERATURE"] != 0]
 
     if len(data) > 0:
         datetime_stamps = pd.to_datetime(data['DATE/TIME'])
@@ -148,8 +141,7 @@ def offwrist_wrapper_acttrust(df,verbose=False,file_verbose=False,filename=""):
         data = bimodal_offwrist_feature(data,half_window_length,activity_features,temperature_features,temperature_difference_features,capsensor1_features,capsensor2_features,verbose=0)
         data["dt"] = datetime_stamps
         data.sort_values(by="dt",ascending=True,inplace=True)
-        # if verbose:
-        #     print(data)
+
         
         activity = data["activity_signal"].to_numpy()
 
@@ -250,7 +242,7 @@ def offwrist_wrapper_acttrust(df,verbose=False,file_verbose=False,filename=""):
                                                                 epoch_hour=epoch_hour,
                                                                 verbose=3,
                                                                 datetime_stamps=datetime_stamps,
-                                                                do_near_all_off_detection=False)
+                                                                do_near_all_off_detection=do_near_all_off_detection)
         else:
             refined_offwrist_estimate = refiner.refine(offwrist_estimate,
                                                        activity,activity_median,
@@ -262,7 +254,7 @@ def offwrist_wrapper_acttrust(df,verbose=False,file_verbose=False,filename=""):
                                                        epoch_hour=epoch_hour,
                                                        verbose=refine_verbose,
                                                        datetime_stamps=datetime_stamps,
-                                                       do_near_all_off_detection=False)
+                                                       do_near_all_off_detection=do_near_all_off_detection)
 
         rolling_quantile = 0.7
         activity_rolling_quantile = quantile_filter(activity,feature_extraction_filters_half_window_length,quantile=rolling_quantile,method='inverted_cdf')

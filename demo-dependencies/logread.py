@@ -217,7 +217,7 @@ class LogRead:
                                     message = "gap from "+str(self.consistency.at[i,"from"])+" to "+str(self.consistency.at[i,"to"])+" was processed and ignored\n"
                                     report_file.write(message)
 
-    def __init__(self,file,ignore_rows=0,duration=0,encoding="latin-1",decimal=".",delimiter=";",dayfirst=True,check_consistency=True,header_pattern="DATE/TIME;",footer_pattern="",parse_dates=['DATE/TIME'],header_dict=True):
+    def __init__(self,file,ignore_rows=0,duration=0,encoding="latin-1",decimal=".",delimiter=";",dayfirst=True,check_consistency=True,header_pattern="DATE/TIME;",footer_pattern="",parse_dates=['DATE/TIME'],date_format="%d/%m/%y %H:%M:%S",header_dict=True):
         # file is a string containing the path to the log file
         # header indicates if the log file has a header
 
@@ -272,8 +272,8 @@ class LogRead:
                             )
         else:
             lines_to_footer, pattern_found = identify_lines_to_ignore(string_io,footer_pattern,return_ignored_lines=False)
-            print(lines_to_ignore)
-            print(lines_to_footer)
+            # print(lines_to_ignore)
+            # print(lines_to_footer)
             data = pd.read_csv(file,
                        skiprows=lines_to_ignore,
                        nrows=lines_to_footer-lines_to_ignore-ignore_rows,
@@ -290,6 +290,11 @@ class LogRead:
         elif parse_dates.size == 2:
             datetime_index = parse_dates[0,0]+"_"+parse_dates[0,1]
 
+        if len(data) > 0:
+            if type(data.at[data.index[0],datetime_index]) == str:
+                # print(data[datetime_index])
+                data[datetime_index] = pd.to_datetime(data[datetime_index])
+            
         data.set_index(data[datetime_index], inplace=True)
 
         self.data = data
