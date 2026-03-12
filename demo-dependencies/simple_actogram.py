@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 from scipy.stats import mode
 from datetime import datetime, timedelta
 
-from cspd_functions import *
+from cspd_functions_without_prints import *
 
 
 def to_datetime(date):
