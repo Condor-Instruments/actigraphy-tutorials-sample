@@ -47,9 +47,6 @@ def calculate_sleep_statistics(data,rest_intervals,sleep_column,sleep_onset_end_
 
     sleep_statistics = pd.DataFrame(rest_intervals,columns=["bed_time","getup_time"])
 
-    # Total bed time statistic for all nights
-    sleep_statistics["tbt"] = sleep_statistics["getup_time"]-sleep_statistics["bed_time"]
-
     # Nightly sleep statistics
     for night in sleep_statistics.index:
         # Getting DateTime stamp infomation for bed and getup time
@@ -73,6 +70,9 @@ def calculate_sleep_statistics(data,rest_intervals,sleep_column,sleep_onset_end_
 
         # Number of awakenings statistic
         sleep_statistics.at[night,"awakenings"] = get_awakenings(night_sleep[onset:end])
+
+    # Total bed time statistic for all nights
+    sleep_statistics["tbt"] = sleep_statistics["getup_time"]-sleep_statistics["bed_time"]
     
     # Total sleep time statistic for all nights
     sleep_statistics["tst"] = sleep_statistics["tbt"]-sleep_statistics["waso"]-sleep_statistics["latency"]-sleep_statistics["innertia"]
