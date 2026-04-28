@@ -44,7 +44,7 @@ def calculate_sleep_statistics(data,rest_intervals,sleep_column,sleep_onset_end_
     sleep_statistics : DataFrame
        Nightly sleep statistics (TBT, TST, WASO, Latency, Innertia, Efficiency and #Awakenings)
     """
-
+    data = data.reset_index(drop=True)
     sleep_statistics = pd.DataFrame(rest_intervals,columns=["bed_time","getup_time"])
 
     # Nightly sleep statistics
