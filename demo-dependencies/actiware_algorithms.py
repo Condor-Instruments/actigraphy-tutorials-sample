@@ -131,29 +131,36 @@ def immobile_sleep_onset_end(night_mobility,min_epochs):
 
     # Computing the sum of the mobility scores for groups of epochs with length min_epochs
     onset_rolling_sum = np.convolve(night_mobility,np.ones(min_epochs),mode="valid")
-    # We're interested in groups where the sum is 1, i.e. all epochs but one are scored as 
+    # We're interested in groups where the sum is 1 at most, i.e. all epochs but one are scored as 
     # immobile
-    onset_candidates = np.where(onset_rolling_sum == 0,1,0)
+    onset_candidates = np.where(onset_rolling_sum <= 1,1,0)
     # Using np.nonzero() we select the indices of the groups with sum equal to 1
     onset_candidates_indices = onset_candidates.nonzero()[0]
-    # And the first one is selected as the onset
+    
+    
     if len(onset_candidates_indices > 0):
+        # And the first one is selected as the onset
         onset = int(onset_candidates_indices[0])
+
+        # To compute sleep end we'll apply the same algorithm but the mobility array is mirrored
+        # horizontally, so we'll start searching from the last epoch
+        end_rolling_sum = np.convolve(np.flip(night_mobility),np.ones(min_epochs),mode="valid")
+        end_candidates = np.where(end_rolling_sum <= 1,1,0)
+        end_candidates_indices = end_candidates.nonzero()[0]
+        # In this case, the index of first group is the distance between the get up time (last 
+        # epoch) to the first epoch of actual sleep, that is the definition of sleep innertia
+        if len(end_candidates_indices > 0):
+            innertia = int(end_candidates_indices[0])
+        else:
+            innertia = 0
+
     else:
-        onset = 0
+        onset = len(night_mobility)-2
+        innertia = 1
+
+
     latency = onset
 
-    # To compute sleep end we'll apply the same algorithm but the mobility array is mirrored
-    # horizontally, so we'll start searching from the last epoch
-    end_rolling_sum = np.convolve(np.flip(night_mobility),np.ones(min_epochs),mode="valid")
-    end_candidates = np.where(end_rolling_sum == 0,1,0)
-    end_candidates_indices = end_candidates.nonzero()[0]
-    # In this case, the index of first group is the distance between the get up time (last 
-    # epoch) to the first epoch of actual sleep, that is the definition of sleep innertia
-    if len(end_candidates_indices > 0):
-        innertia = int(end_candidates_indices[0])
-    else:
-        innertia = 0
     # Sleep end is the index of the last epoch of actual sleep
     end = len(night_mobility)-innertia
 
